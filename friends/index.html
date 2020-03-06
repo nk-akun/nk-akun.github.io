@@ -16,7 +16,7 @@
 
   <!-- 页面元数据 -->
   
-    <title>我的邻居们 - Mathon</title>
+    <title>我的邻居们 - Marthon</title>
   
   
 
@@ -174,7 +174,7 @@
                 
                 
                 id="home">
-                <i class='fas fa-rss fa-fw'></i>&nbsp;首页
+                <i class='fas fa-home fa-fw'></i>&nbsp;首页
               </a>
             </li>
           
@@ -219,7 +219,7 @@
                 
                 
                 id="about">
-                <i class='fas fa-info-circle fa-fw'></i>&nbsp;关于
+                <i class='fas fa-info-circle fa-fw'></i>&nbsp;About me
               </a>
             </li>
           
@@ -263,7 +263,7 @@
               
               
               id="home">
-              <i class='fas fa-rss fa-fw'></i>&nbsp;首页
+              <i class='fas fa-home fa-fw'></i>&nbsp;首页
             </a>
           </li>
         
@@ -401,7 +401,21 @@
 
 
 
-  
+  <article class="post white-box comments  ">
+    <section class="article typo">
+      <h4><i class="fas fa-comments fa-fw" aria-hidden="true"></i>&nbsp;Comments</h4>
+      
+      
+      
+      
+        <section id="comments">
+          <div id="valine_container" class="valine_thread">
+            <i class="fas fa-spinner fa-spin fa-fw"></i>
+          </div>
+        </section>
+      
+    </section>
+  </article>
 
 
 
@@ -439,16 +453,24 @@
         <div class="social-wrapper">
           
             
-              <a href="/atom.xml"
-                class="social fas fa-rss flat-btn"
+              <a href="mailto:nk_akun@163.com"
+                class="social fas fa-envelope flat-btn"
                 target="_blank"
                 rel="external nofollow noopener noreferrer">
               </a>
             
           
             
-              <a href="mailto:nk_akun@163.com"
-                class="social fas fa-envelope flat-btn"
+              <a href="https://www.instagram.com/nka_kun"
+                class="social fas fa-instagram flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+            
+              <a href="https://twitter.com/Marthon_K"
+                class="social fas fa-twitter flat-btn"
                 target="_blank"
                 rel="external nofollow noopener noreferrer">
               </a>
@@ -533,16 +555,16 @@
       $(function(){
         if ('.cover') {
           $('.cover').backstretch(
-          ["https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/ajYKLDAa9tQ.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/1055627.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/71aa072e23f9cfff80fa69f76b2cc441.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/750a4b0493d74358f48717f0179aefcd.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/948684.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/8sF7TEJkhpI.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/dLbeBmTdKa4.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/shjshfys.jpg"],
+          ["https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/dLbeBmTdKa4.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/shjshfys.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/71aa072e23f9cfff80fa69f76b2cc441.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/750a4b0493d74358f48717f0179aefcd.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/8sF7TEJkhpI.jpg"],
           {
-            duration: "5000",
+            duration: "50000",
             fade: "2500"
           });
         } else {
           $.backstretch(
-          ["https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/ajYKLDAa9tQ.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/1055627.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/71aa072e23f9cfff80fa69f76b2cc441.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/750a4b0493d74358f48717f0179aefcd.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/948684.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/8sF7TEJkhpI.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/dLbeBmTdKa4.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/shjshfys.jpg"],
+          ["https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/dLbeBmTdKa4.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/shjshfys.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/71aa072e23f9cfff80fa69f76b2cc441.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/750a4b0493d74358f48717f0179aefcd.jpg", "https://cdn.jsdelivr.net/gh/nk-akun/cdn/pictures/8sF7TEJkhpI.jpg"],
           {
-            duration: "5000",
+            duration: "50000",
             fade: "2500"
           });
         }
@@ -557,6 +579,36 @@
 
 
 
+
+  
+    
+<script src="/js/valine.js"></script>
+
+  
+  <script>
+  var GUEST_INFO = ['nick','mail','link'];
+  var guest_info = 'nick,mail,link'.split(',').filter(function(item){
+    return GUEST_INFO.indexOf(item) > -1
+  });
+  var notify = 'true' == true;
+  var verify = 'true' == true;
+  var valine = new Valine();
+  valine.init({
+    el: '#valine_container',
+    notify: notify,
+    verify: verify,
+    guest_info: guest_info,
+    
+    appId: "iRzwaXu5fbpRyeWJ1iHJd91X-gzGzoHsz",
+    appKey: "dTmta39z7yyvpph1AsOoVvLp",
+    placeholder: "快来评论吧~",
+    pageSize:'10',
+    avatar:'retro',
+    lang:'zh-cn',
+    visitor: 'false',
+    highlight:'true'
+  })
+  </script>
 
 
 
