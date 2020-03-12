@@ -21,6 +21,18 @@
     <meta name="keywords" content="Linux,网络通信">
   
   
+    <meta name="description" content="要点
+从通信底层看socket
+I/O模型
+阻塞式I/O
+非阻塞式I/O
+I/O复用
+信号驱动I/O
+异步I/O
+
+
+">
+  
 
   <!-- feed -->
   
@@ -400,7 +412,22 @@
       <section class="article typo">
         <div class="article-entry" itemprop="articleBody">
           
-          <h3 id="从网络通信底层看socket"><a href="#从网络通信底层看socket" class="headerlink" title="从网络通信底层看socket"></a>从网络通信底层看socket</h3><hr>
+          <h4 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h4><ul>
+<li>从通信底层看socket</li>
+<li>I/O模型<ul>
+<li>阻塞式I/O</li>
+<li>非阻塞式I/O</li>
+<li>I/O复用</li>
+<li>信号驱动I/O</li>
+<li>异步I/O</li>
+</ul>
+</li>
+</ul>
+<a id="more"></a>
+
+
+
+<h3 id="从网络通信底层看socket"><a href="#从网络通信底层看socket" class="headerlink" title="从网络通信底层看socket"></a>从网络通信底层看socket</h3><hr>
 <p>当我们启动一个web服务，监听某个函数，在c++中使用如下函数：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">socket</span><span class="params">(<span class="keyword">int</span> domain,<span class="keyword">int</span> type,<span class="keyword">int</span> protocol)</span> <span class="comment">//创建socket</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bind</span><span class="params">(<span class="keyword">int</span> sockfd,<span class="keyword">const</span> struct sockaddr* my_addr,<span class="keyword">socklen_t</span> addrlen)</span> <span class="comment">//my_addr地址绑定sockfd</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">listen</span><span class="params">(<span class="keyword">int</span> sockfd,<span class="keyword">int</span> backlog)</span> <span class="comment">//backlog是指最大监听长度</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">accept</span><span class="params">(<span class="keyword">int</span> sockfd,struct sockaddr* addr,<span class="keyword">socklen_t</span> addrlen)</span> <span class="comment">//addr是接受的远端socket地址</span></span></span><br><span class="line"><span class="function"><span class="keyword">ssize_t</span> <span class="title">recv</span><span class="params">(<span class="keyword">int</span> sockfd,<span class="keyword">void</span> *buf,<span class="keyword">size_t</span> len,<span class="keyword">int</span> flags)</span> <span class="comment">//接收sockfd上的数据</span></span></span><br></pre></td></tr></table></figure>
 
@@ -477,7 +504,7 @@
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-03-12T14:28:54+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-03-12T14:35:37+08:00">
   <a class='notlink'>
     <i class="fas fa-save" aria-hidden="true"></i>
     <p>更新于：Mar 12, 2020</p>
@@ -511,7 +538,17 @@
       
         <a class="-mob-share-qq" title="QQ好友" rel="external nofollow noopener noreferrer"
           
-          href="http://connect.qq.com/widget/shareqq/index.html?url=https://nkakun.cn/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/&title=网络通信中几种IO模型的解释与比较 - Marthon&summary="
+          href="http://connect.qq.com/widget/shareqq/index.html?url=https://nkakun.cn/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/&title=网络通信中几种IO模型的解释与比较 - Marthon&summary=要点
+从通信底层看socket
+I/O模型
+阻塞式I/O
+非阻塞式I/O
+I/O复用
+信号驱动I/O
+异步I/O
+
+
+"
           
           >
           
@@ -523,7 +560,17 @@
       
         <a class="-mob-share-qzone" title="QQ空间" rel="external nofollow noopener noreferrer"
           
-          href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=https://nkakun.cn/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/&title=网络通信中几种IO模型的解释与比较 - Marthon&summary="
+          href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=https://nkakun.cn/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/&title=网络通信中几种IO模型的解释与比较 - Marthon&summary=要点
+从通信底层看socket
+I/O模型
+阻塞式I/O
+非阻塞式I/O
+I/O复用
+信号驱动I/O
+异步I/O
+
+
+"
           
           >
           
@@ -535,7 +582,17 @@
       
         <a class="-mob-share-weibo" title="微博" rel="external nofollow noopener noreferrer"
           
-          href="http://service.weibo.com/share/share.php?url=https://nkakun.cn/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/&title=网络通信中几种IO模型的解释与比较 - Marthon&summary="
+          href="http://service.weibo.com/share/share.php?url=https://nkakun.cn/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/&title=网络通信中几种IO模型的解释与比较 - Marthon&summary=要点
+从通信底层看socket
+I/O模型
+阻塞式I/O
+非阻塞式I/O
+I/O复用
+信号驱动I/O
+异步I/O
+
+
+"
           
           >
           
@@ -642,7 +699,7 @@
 
 
     <div class='content'>
-      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#从网络通信底层看socket"><span class="toc-text">从网络通信底层看socket</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#I-O模型"><span class="toc-text">I&#x2F;O模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#阻塞式I-O"><span class="toc-text">阻塞式I&#x2F;O</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#非阻塞式I-O"><span class="toc-text">非阻塞式I&#x2F;O</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#I-O复用"><span class="toc-text">I&#x2F;O复用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#信号驱动I-O"><span class="toc-text">信号驱动I&#x2F;O</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#异步I-O"><span class="toc-text">异步I&#x2F;O</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#要点"><span class="toc-text">要点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#从网络通信底层看socket"><span class="toc-text">从网络通信底层看socket</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#I-O模型"><span class="toc-text">I&#x2F;O模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#阻塞式I-O"><span class="toc-text">阻塞式I&#x2F;O</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#非阻塞式I-O"><span class="toc-text">非阻塞式I&#x2F;O</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#I-O复用"><span class="toc-text">I&#x2F;O复用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#信号驱动I-O"><span class="toc-text">信号驱动I&#x2F;O</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#异步I-O"><span class="toc-text">异步I&#x2F;O</span></a></li></ol>
     </div>
   </section>
 

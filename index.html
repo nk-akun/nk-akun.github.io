@@ -411,38 +411,26 @@
 
   <section class="article typo">
     <div class="article-entry" itemprop="articleBody">
-      <h3 id="从网络通信底层看socket"><a href="#从网络通信底层看socket" class="headerlink" title="从网络通信底层看socket"></a>从网络通信底层看socket</h3><hr>
-<p>当我们启动一个web服务，监听某个函数，在c++中使用如下函数：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">socket</span><span class="params">(<span class="keyword">int</span> domain,<span class="keyword">int</span> type,<span class="keyword">int</span> protocol)</span> <span class="comment">//创建socket</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bind</span><span class="params">(<span class="keyword">int</span> sockfd,<span class="keyword">const</span> struct sockaddr* my_addr,<span class="keyword">socklen_t</span> addrlen)</span> <span class="comment">//my_addr地址绑定sockfd</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">listen</span><span class="params">(<span class="keyword">int</span> sockfd,<span class="keyword">int</span> backlog)</span> <span class="comment">//backlog是指最大监听长度</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">accept</span><span class="params">(<span class="keyword">int</span> sockfd,struct sockaddr* addr,<span class="keyword">socklen_t</span> addrlen)</span> <span class="comment">//addr是接受的远端socket地址</span></span></span><br><span class="line"><span class="function"><span class="keyword">ssize_t</span> <span class="title">recv</span><span class="params">(<span class="keyword">int</span> sockfd,<span class="keyword">void</span> *buf,<span class="keyword">size_t</span> len,<span class="keyword">int</span> flags)</span> <span class="comment">//接收sockfd上的数据</span></span></span><br></pre></td></tr></table></figure>
-
-<p>这里执行到recv就要阻塞了，因为客户端有可能还没有发来数据，但是这里就有一个问题，如果服务端监听了多个像这样的客户端socket，那如果光等这一个客户端发来数据而把其他的客户端耽误了，那明显是有点不值当的，我们完全可以先去处理别的请求，再回来处理这个请求，这里就牵扯到I/O复用的问题了.</p>
-<p>一个数据输入操作通常包括两个阶段：</p>
-<ul>
-<li>等待数据准备好</li>
-<li>从内核向进程复制数据</li>
+      <h4 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h4><ul>
+<li>从通信底层看socket</li>
+<li>I/O模型<ul>
+<li>阻塞式I/O</li>
+<li>非阻塞式I/O</li>
+<li>I/O复用</li>
+<li>信号驱动I/O</li>
+<li>异步I/O</li>
 </ul>
-<p>对于一个套接字上的输入操作，第一步通常涉及等待数据从网络中到达。当所等待数据到达时，它被暂存到内核中的某个缓冲区。第二步就是把数据从内核缓冲区复制到应用进程缓冲区。</p>
-<blockquote>
-<p>这里为什么不直接复制到应用进程缓冲区呢？</p>
-<p>这涉及到内核态和用户态的概念，从socket接收数据是只能在内核态做的事情，这里的内核缓冲区的目的也是为了能够暂存客户端发来的数据，提高I/O效率。</p>
-</blockquote>
-<h3 id="I-O模型"><a href="#I-O模型" class="headerlink" title="I/O模型"></a>I/O模型</h3><hr>
-<ul>
-<li>阻塞式 I/O</li>
+</li>
 </ul>
-<ul>
-<li>非阻塞式 I/O</li>
-<li>I/O 复用（select 和 poll）</li>
-<li>信号驱动式 I/O（SIGIO）</li>
-<li>异步 I/O（AIO）</li>
-</ul>
-<h4 id="阻塞式I-O"><a href="#阻塞式I-O" class="headerlink" title="阻塞式I/O"></a>阻塞式I/O</h4><p>此IO可能因为无法立即完成而被挂起，比如上面的recv函数，用户侧socket并没有发来数据，recv就要阻塞，其他可能发生阻塞的函数有accept，send，connect等，这里的进程因为等待数据而被阻塞，无法继续向下运行</p>
-<h4 id="非阻塞式I-O"><a href="#非阻塞式I-O" class="headerlink" title="非阻塞式I/O"></a>非阻塞式I/O</h4><p>此IO会在系统调用后立即返回，无论是否可以发生此事件。比如执行accept，send，recv，对应事件未发生，可能返回error：EAGAIN（再来一次），也就是会轮询执行系统调用，不断执行直到事件发生为止。也有可能返回EWOULDBLOCK(期望阻塞)，EINPROGRESS（在处理中）。这种由于 CPU 要处理更多的系统调用，因此这种模型的 CPU 利用率比较低。</p>
-<h4 id="I-O复用"><a href="#I-O复用" class="headerlink" title="I/O复用"></a>I/O复用</h4><p>此IO最常用的就是IO通知机制，应用程序（进程/线程）通过IO复用函数向内核注册一组事件，内核通过IO复用函数把IO就绪的事件通知给应用程序，IO复用函数如select，poll，epoll，他们本身是阻塞的，只是他们可以监听多个IO事件，当IOready时，内核会唤醒IO复用函数。</p>
-<p>如果一个 Web 服务器没有 I/O 复用，那么每一个 Socket 连接都需要创建一个线程去处理。如果同时有几万个连接，那么就需要创建相同数量的线程。相比于多进程和多线程技术，I/O 复用不需要进程线程创建和切换的开销，系统开销更小。</p>
-<h4 id="信号驱动I-O"><a href="#信号驱动I-O" class="headerlink" title="信号驱动I/O"></a>信号驱动I/O</h4><p>我们对一个文件描述符指定宿主进程，被指定的进程将捕获SIGIO信号。当目标文件描述符有IO事件发生时，SIGIO信号的信号处理函数将被触发，我们也就可以在该信号处理函数中对此文件描述符执行非阻塞IO操作了。</p>
-<h4 id="异步I-O"><a href="#异步I-O" class="headerlink" title="异步I/O"></a>异步I/O</h4><p>上面四种都是同步IO，即要求用户代码自行执行IO逻辑（将数据从内核缓冲区读入用户缓冲区，或者反之），而异步IO则由内核完成上述工作，即数据在内核缓冲区和用户缓冲区之间的移动是在“后台”完成的。同步IO是通知应用进程IO就绪事件，异步IO通知IO完成事件。</p>
-
+      
+        
+          <div class="button readmore">
+            <a href="/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/" class="flat-box">
+              <i class="fas fa-book-open fa-fw" aria-hidden="true"></i>
+              Read More
+            </a>
+          </div>
+        
       
     </div>
     <!-- 
