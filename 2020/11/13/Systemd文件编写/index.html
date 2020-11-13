@@ -16,22 +16,10 @@
 
   <!-- 页面元数据 -->
   
-    <title>网络通信中几种IO模型的解释与比较 - Marthon</title>
+    <title>Systemd文件编写 - Marthon</title>
   
-    <meta name="keywords" content="Linux,网络通信">
+    <meta name="keywords" content="Linux,service">
   
-  
-    <meta name="description" content="要点
-从通信底层看socket
-I/O模型
-阻塞式I/O
-非阻塞式I/O
-I/O复用
-信号驱动I/O
-异步I/O
-
-
-">
   
 
   <!-- feed -->
@@ -355,8 +343,8 @@ I/O复用
         
   
     <h1 class="title">
-      <a href="/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/">
-        网络通信中几种IO模型的解释与比较
+      <a href="/2020/11/13/Systemd%E6%96%87%E4%BB%B6%E7%BC%96%E5%86%99/">
+        Systemd文件编写
       </a>
     </h1>
   
@@ -382,7 +370,7 @@ I/O复用
             <div class="new-meta-item date">
   <a class='notlink'>
     <i class="fas fa-edit" aria-hidden="true"></i>
-    <p>发布于：Mar 12, 2020</p>
+    <p>发布于：Nov 13, 2020</p>
   </a>
 </div>
 
@@ -412,52 +400,56 @@ I/O复用
       <section class="article typo">
         <div class="article-entry" itemprop="articleBody">
           
-          <h4 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h4><ul>
-<li>从通信底层看socket</li>
-<li>I/O模型<ul>
-<li>阻塞式I/O</li>
-<li>非阻塞式I/O</li>
-<li>I/O复用</li>
-<li>信号驱动I/O</li>
-<li>异步I/O</li>
-</ul>
-</li>
-</ul>
-<a id="more"></a>
+          <p>###配置文件路径</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/lib/systemd/system</span><br></pre></td></tr></table></figure>
 
 
 
-<h3 id="从网络通信底层看socket"><a href="#从网络通信底层看socket" class="headerlink" title="从网络通信底层看socket"></a>从网络通信底层看socket</h3><hr>
-<p>当我们启动一个web服务，监听某个函数，在c++中使用如下函数：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">socket</span><span class="params">(<span class="keyword">int</span> domain,<span class="keyword">int</span> type,<span class="keyword">int</span> protocol)</span> <span class="comment">//创建socket</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bind</span><span class="params">(<span class="keyword">int</span> sockfd,<span class="keyword">const</span> struct sockaddr* my_addr,<span class="keyword">socklen_t</span> addrlen)</span> <span class="comment">//my_addr地址绑定sockfd</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">listen</span><span class="params">(<span class="keyword">int</span> sockfd,<span class="keyword">int</span> backlog)</span> <span class="comment">//backlog是指最大监听长度</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">accept</span><span class="params">(<span class="keyword">int</span> sockfd,struct sockaddr* addr,<span class="keyword">socklen_t</span> addrlen)</span> <span class="comment">//addr是接受的远端socket地址</span></span></span><br><span class="line"><span class="function"><span class="keyword">ssize_t</span> <span class="title">recv</span><span class="params">(<span class="keyword">int</span> sockfd,<span class="keyword">void</span> *buf,<span class="keyword">size_t</span> len,<span class="keyword">int</span> flags)</span> <span class="comment">//接收sockfd上的数据</span></span></span><br></pre></td></tr></table></figure>
+<h3 id="样例"><a href="#样例" class="headerlink" title="样例"></a>样例</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description&#x3D;NeighborBBS server daemon</span><br><span class="line"># After&#x3D;mysql.service</span><br><span class="line">Wants&#x3D;network.target mysql.service</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart&#x3D;&#x2F;root&#x2F;work&#x2F;repos&#x2F;neighbor_bbs&#x2F;run.sh</span><br><span class="line">Restart&#x3D;always</span><br><span class="line">RestartSec&#x3D;5s</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy&#x3D;multi-user.target</span><br></pre></td></tr></table></figure>
 
-<p>这里执行到recv就要阻塞了，因为客户端有可能还没有发来数据，但是这里就有一个问题，如果服务端监听了多个像这样的客户端socket，那如果光等这一个客户端发来数据而把其他的客户端耽误了，那明显是有点不值当的，我们完全可以先去处理别的请求，再回来处理这个请求，这里就牵扯到I/O复用的问题了.</p>
-<p>一个数据输入操作通常包括两个阶段：</p>
+
+
+<h3 id="编写常用规则"><a href="#编写常用规则" class="headerlink" title="编写常用规则"></a>编写常用规则</h3><hr>
+<p>####[Unit]</p>
+<p><code>Description</code>字段给出当前服务的简单描述</p>
+<p><code>Documentation</code>字段给出文档位置。</p>
+<p><code>After</code>字段表示此服务应该在哪些服务后启动(必须)</p>
+<p><code>Wants</code>字段表示此服务应该在哪些服务后启动(非必须)</p>
+<h4 id="Service"><a href="#Service" class="headerlink" title="[Service]"></a>[Service]</h4><p><code>ExecStart</code>表示启动命令，如果跟的是<code>.sh</code>文件，<code>.sh</code>文件的开头应为 /bin/bash</p>
+<p><code>ExecStop</code>字段：停止服务时执行的命令</p>
+<p><code>ExecStartPre</code>字段：启动服务之前执行的命令</p>
+<p><code>ExecStartPost</code>字段：启动服务之后执行的命令</p>
+<p><code>ExecStopPost</code>字段：停止服务之后执行的命令</p>
+<p><code>Type</code>表示启动类型</p>
 <ul>
-<li>等待数据准备好</li>
-<li>从内核向进程复制数据</li>
+<li>simple（默认值）：<code>ExecStart</code>字段启动的进程为主进程</li>
+<li>oneshot：类似于<code>simple</code>，但只执行一次，Systemd 会等它执行完，才启动其他服务</li>
 </ul>
-<p>对于一个套接字上的输入操作，第一步通常涉及等待数据从网络中到达。当所等待数据到达时，它被暂存到内核中的某个缓冲区。第二步就是把数据从内核缓冲区复制到应用进程缓冲区。</p>
+<p><code>Restart</code>字段表示sshd 退出后，Systemd 的重启方式</p>
+<ul>
+<li>no（默认值）：退出后不会重启</li>
+<li>on-failure：非正常退出时（退出状态码非0），包括被信号终止和超时，才会重启</li>
+<li>on-success：只有正常退出时（退出状态码为0），才会重启</li>
+<li>always：不管是什么退出原因，总是重启</li>
+</ul>
+<p><code>RestartSec</code>字段表示 Systemd 重启服务之前，需要等待的秒数</p>
+<h4 id="Install"><a href="#Install" class="headerlink" title="[Install]"></a>[Install]</h4><p><code>WantedBy</code>字段：表示该服务所在的 Target,一般常用multi-user.target</p>
 <blockquote>
-<p>这里为什么不直接复制到应用进程缓冲区呢？</p>
-<p>这涉及到内核态和用户态的概念，从socket接收数据是只能在内核态做的事情，这里的内核缓冲区的目的也是为了能够暂存客户端发来的数据，提高I/O效率。</p>
+<p><code>Target</code>的含义是服务组，表示一组服务。<code>WantedBy=multi-user.target</code>指的是，sshd 所在的 Target 是<code>multi-user.target</code>。</p>
+<p>这个设置非常重要，因为执行<code>systemctl enable sshd.service</code>命令时，<code>sshd.service</code>的一个符号链接，就会放在<code>/etc/systemd/system</code>目录下面的<code>multi-user.target.wants</code>子目录之中。在multi-user.target这个组里的所有服务，都将开机启动。这就是为什么<code>systemctl enable</code>命令能设置开机启动的原因。</p>
 </blockquote>
-<h3 id="I-O模型"><a href="#I-O模型" class="headerlink" title="I/O模型"></a>I/O模型</h3><hr>
-<ul>
-<li>阻塞式 I/O</li>
-</ul>
-<ul>
-<li>非阻塞式 I/O</li>
-<li>I/O 复用（select 和 poll）</li>
-<li>信号驱动式 I/O（SIGIO）</li>
-<li>异步 I/O（AIO）</li>
-</ul>
-<h4 id="阻塞式I-O"><a href="#阻塞式I-O" class="headerlink" title="阻塞式I/O"></a>阻塞式I/O</h4><p>此IO可能因为无法立即完成而被挂起，比如上面的recv函数，用户侧socket并没有发来数据，recv就要阻塞，其他可能发生阻塞的函数有accept，send，connect等，这里的进程因为等待数据而被阻塞，无法继续向下运行</p>
-<h4 id="非阻塞式I-O"><a href="#非阻塞式I-O" class="headerlink" title="非阻塞式I/O"></a>非阻塞式I/O</h4><p>此IO会在系统调用后立即返回，无论是否可以发生此事件。比如执行accept，send，recv，对应事件未发生，可能返回error：EAGAIN（再来一次），也就是会轮询执行系统调用，不断执行直到事件发生为止。也有可能返回EWOULDBLOCK(期望阻塞)，EINPROGRESS（在处理中）。这种由于 CPU 要处理更多的系统调用，因此这种模型的 CPU 利用率比较低。</p>
-<h4 id="I-O复用"><a href="#I-O复用" class="headerlink" title="I/O复用"></a>I/O复用</h4><p>此IO最常用的就是IO通知机制，应用程序（进程/线程）通过IO复用函数向内核注册一组事件，内核通过IO复用函数把IO就绪的事件通知给应用程序，IO复用函数如select，poll，epoll，他们本身是阻塞的，只是他们可以监听多个IO事件，当IOready时，内核会唤醒IO复用函数。</p>
-<p>如果一个 Web 服务器没有 I/O 复用，那么每一个 Socket 连接都需要创建一个线程去处理。如果同时有几万个连接，那么就需要创建相同数量的线程。相比于多进程和多线程技术，I/O 复用不需要进程线程创建和切换的开销，系统开销更小。</p>
-<h4 id="信号驱动I-O"><a href="#信号驱动I-O" class="headerlink" title="信号驱动I/O"></a>信号驱动I/O</h4><p>我们对一个文件描述符指定宿主进程，被指定的进程将捕获SIGIO信号。当目标文件描述符有IO事件发生时，SIGIO信号的信号处理函数将被触发，我们也就可以在该信号处理函数中对此文件描述符执行非阻塞IO操作了。</p>
-<h4 id="异步I-O"><a href="#异步I-O" class="headerlink" title="异步I/O"></a>异步I/O</h4><p>上面四种都是同步IO，即要求用户代码自行执行IO逻辑（将数据从内核缓冲区读入用户缓冲区，或者反之），而异步IO则由内核完成上述工作，即数据在内核缓冲区和用户缓冲区之间的移动是在“后台”完成的。同步IO是通知应用进程IO就绪事件，异步IO通知IO完成事件。</p>
+<h3 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h3><h4 id="开机自动启动"><a href="#开机自动启动" class="headerlink" title="开机自动启动"></a>开机自动启动</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable service_name</span><br></pre></td></tr></table></figure>
+
+<h4 id="重新加载配置文件"><a href="#重新加载配置文件" class="headerlink" title="重新加载配置文件"></a>重新加载配置文件</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload</span><br></pre></td></tr></table></figure>
+
+<h4 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start service_name</span><br></pre></td></tr></table></figure>
+
+<h4 id="停止服务"><a href="#停止服务" class="headerlink" title="停止服务"></a>停止服务</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop service_name</span><br></pre></td></tr></table></figure>
+
+<h4 id="重启服务"><a href="#重启服务" class="headerlink" title="重启服务"></a>重启服务</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart service_name</span><br></pre></td></tr></table></figure>
+
+<h4 id="查看服务状态"><a href="#查看服务状态" class="headerlink" title="查看服务状态"></a>查看服务状态</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status service_name</span><br></pre></td></tr></table></figure>
+
 
           
             <br>
@@ -481,7 +473,7 @@ I/O复用
           
         
           
-            <p>转载注明出处：<a href=https://nkakun.cn/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/>https://nkakun.cn/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/</a></p>
+            <p>转载注明出处：<a href=https://nkakun.cn/2020/11/13/Systemd%E6%96%87%E4%BB%B6%E7%BC%96%E5%86%99/>https://nkakun.cn/2020/11/13/Systemd%E6%96%87%E4%BB%B6%E7%BC%96%E5%86%99/</a></p>
           
         
       </blockquote>
@@ -504,10 +496,10 @@ I/O复用
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-03-12T14:35:37+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-11-13T14:03:31+08:00">
   <a class='notlink'>
     <i class="fas fa-save" aria-hidden="true"></i>
-    <p>更新于：Mar 12, 2020</p>
+    <p>更新于：Nov 13, 2020</p>
   </a>
 </div>
 
@@ -516,7 +508,7 @@ I/O复用
         
           
   
-  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/Linux/" rel="nofollow"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;<p>Linux</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/" rel="nofollow"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;<p>网络通信</p></a></div>
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/Linux/" rel="nofollow"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;<p>Linux</p></a></div> <div class="new-meta-item meta-tags"><a class="tag" href="/tags/service/" rel="nofollow"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;<p>service</p></a></div>
 
 
         
@@ -529,8 +521,8 @@ I/O复用
       
         
         <fancybox>
-          <a class='qrcode' rel="external nofollow noopener noreferrer" data-fancybox="gallery-qrcode" href="data:image/png;base64,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">
-            <img style='height:16px;border-radius:0;margin-left:4px' src="data:image/png;base64,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">
+          <a class='qrcode' rel="external nofollow noopener noreferrer" data-fancybox="gallery-qrcode" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATgAAAE4CAAAAADqFLC2AAADrUlEQVR42u3aUXIqMQwEQO5/6fcOkKJsjQQIqv2XBHbt9s/UKI9/VrQeCMCBAwfOAgduCdwjXE8fXPzc6fvpfp79vft8cODAgQMHDhy4bXDXAfDy86eNl4Nn8SKm3g8OHDhw4MCBA/ctcMcAeLmR299XA3X38+3zggMHDhw4cODA/ShcWnSmwbgKDA4cOHDgwIEDB252AJ0CpAUnOHDgwIEDBw7cr8GVB7TFQXC1mOwOpNOBOjhw4MCBAwcO3LfAVVdabG75OT4vOHDgwIEDBw7cErjuqgKnATQNtN1B95/ngQMHDhw4cODALYFLA2K1UOz+Q2K3wBw7Hzhw4MCBAwcO3DK4Lsj091812E4vBBw4cODAgQMHbhtct6isFozdA56e293n2EAaHDhw4MCBAwfuTXDVIHlbUHZ/3w261fMcYcGBAwcOHDhw4JbC3QbDNDhXLyA9+FQxCg4cOHDgwIEDtx0ufWFaiKZF5NQgujpABwcOHDhw4MCB2w7XDZZp8Ky+b2qf5YE1OHDgwIEDBw7cMrhq0dgdVKfFZgqYBmhw4MCBAwcOHLitcN0NpAefuqDqRaQFJjhw4MCBAwcO3LfB3cJWAdLBdAoytj9w4MCBAwcOHLhlcFP/yPfpg04F3qfnAAcOHDhw4MCBWwo3HVinCs9XA8YDaXDgwIEDBw4cuA/BTRWL1ed14asXcBvMj5DgwIEDBw4cOHBL4Kov6BaOaXCtDqpv9139Hjhw4MCBAwcO3Ba42+Da3UgaqFOo6mD8OrCDAwcOHDhw4MAtgZsuJrsD6+4AuzsQP74PHDhw4MCBAwduCVwaWNMC8rY4rAbt6gVULxocOHDgwIEDB24bXHeQ3H1OehFp4K5ezHGSDw4cOHDgwIED92G4dwXeFKJ7AWlxewzA4MCBAwcOHDhwS+DSwNsFTIPsqwbhT/cFDhw4cODAgQO3FK4bXNPA2S1G3zYoBwcOHDhw4MCBWwLXXd0BdPeCuoPn8gWBAwcOHDhw4MAtgXuEq1og3m60+/nb58U/gwMHDhw4cODALYNLA+yrNp4Wqm8PwODAgQMHDhw4cEvg2gPbJkxapE4PpJ/+HRw4cODAgQMH7sfgqoXn7YA6LUrTzx8vBBw4cODAgQMH7sfgpgvQNGDHBeVtUAcHDhw4cODAgVsKlwbWqY3dFpbVQfNtcXncNzhw4MCBAwcO3DK47gC3OnB+NNd0wL4+Lzhw4MCBAwcO3BI4qxjkEYADBw6cBQ7cZ9d/pWh6AEbzKGUAAAAASUVORK5CYII=">
+            <img style='height:16px;border-radius:0;margin-left:4px' src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATgAAAE4CAAAAADqFLC2AAADrUlEQVR42u3aUXIqMQwEQO5/6fcOkKJsjQQIqv2XBHbt9s/UKI9/VrQeCMCBAwfOAgduCdwjXE8fXPzc6fvpfp79vft8cODAgQMHDhy4bXDXAfDy86eNl4Nn8SKm3g8OHDhw4MCBA/ctcMcAeLmR299XA3X38+3zggMHDhw4cODA/ShcWnSmwbgKDA4cOHDgwIEDB252AJ0CpAUnOHDgwIEDBw7cr8GVB7TFQXC1mOwOpNOBOjhw4MCBAwcO3LfAVVdabG75OT4vOHDgwIEDBw7cErjuqgKnATQNtN1B95/ngQMHDhw4cODALYFLA2K1UOz+Q2K3wBw7Hzhw4MCBAwcO3DK4Lsj091812E4vBBw4cODAgQMHbhtct6isFozdA56e293n2EAaHDhw4MCBAwfuTXDVIHlbUHZ/3w261fMcYcGBAwcOHDhw4JbC3QbDNDhXLyA9+FQxCg4cOHDgwIEDtx0ufWFaiKZF5NQgujpABwcOHDhw4MCB2w7XDZZp8Ky+b2qf5YE1OHDgwIEDBw7cMrhq0dgdVKfFZgqYBmhw4MCBAwcOHLitcN0NpAefuqDqRaQFJjhw4MCBAwcO3LfB3cJWAdLBdAoytj9w4MCBAwcOHLhlcFP/yPfpg04F3qfnAAcOHDhw4MCBWwo3HVinCs9XA8YDaXDgwIEDBw4cuA/BTRWL1ed14asXcBvMj5DgwIEDBw4cOHBL4Kov6BaOaXCtDqpv9139Hjhw4MCBAwcO3Ba42+Da3UgaqFOo6mD8OrCDAwcOHDhw4MAtgZsuJrsD6+4AuzsQP74PHDhw4MCBAwduCVwaWNMC8rY4rAbt6gVULxocOHDgwIEDB24bXHeQ3H1OehFp4K5ezHGSDw4cOHDgwIED92G4dwXeFKJ7AWlxewzA4MCBAwcOHDhwS+DSwNsFTIPsqwbhT/cFDhw4cODAgQO3FK4bXNPA2S1G3zYoBwcOHDhw4MCBWwLXXd0BdPeCuoPn8gWBAwcOHDhw4MAtgXuEq1og3m60+/nb58U/gwMHDhw4cODALYNLA+yrNp4Wqm8PwODAgQMHDhw4cEvg2gPbJkxapE4PpJ/+HRw4cODAgQMH7sfgqoXn7YA6LUrTzx8vBBw4cODAgQMH7sfgpgvQNGDHBeVtUAcHDhw4cODAgVsKlwbWqY3dFpbVQfNtcXncNzhw4MCBAwcO3DK47gC3OnB+NNd0wL4+Lzhw4MCBAwcO3BI4qxjkEYADBw6cBQ7cZ9d/pWh6AEbzKGUAAAAASUVORK5CYII=">
           </a>
         </fancybox>
       
@@ -538,17 +530,7 @@ I/O复用
       
         <a class="-mob-share-qq" title="QQ好友" rel="external nofollow noopener noreferrer"
           
-          href="http://connect.qq.com/widget/shareqq/index.html?url=https://nkakun.cn/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/&title=网络通信中几种IO模型的解释与比较 - Marthon&summary=要点
-从通信底层看socket
-I/O模型
-阻塞式I/O
-非阻塞式I/O
-I/O复用
-信号驱动I/O
-异步I/O
-
-
-"
+          href="http://connect.qq.com/widget/shareqq/index.html?url=https://nkakun.cn/2020/11/13/Systemd%E6%96%87%E4%BB%B6%E7%BC%96%E5%86%99/&title=Systemd文件编写 - Marthon&summary="
           
           >
           
@@ -560,17 +542,7 @@ I/O复用
       
         <a class="-mob-share-qzone" title="QQ空间" rel="external nofollow noopener noreferrer"
           
-          href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=https://nkakun.cn/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/&title=网络通信中几种IO模型的解释与比较 - Marthon&summary=要点
-从通信底层看socket
-I/O模型
-阻塞式I/O
-非阻塞式I/O
-I/O复用
-信号驱动I/O
-异步I/O
-
-
-"
+          href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=https://nkakun.cn/2020/11/13/Systemd%E6%96%87%E4%BB%B6%E7%BC%96%E5%86%99/&title=Systemd文件编写 - Marthon&summary="
           
           >
           
@@ -582,17 +554,7 @@ I/O复用
       
         <a class="-mob-share-weibo" title="微博" rel="external nofollow noopener noreferrer"
           
-          href="http://service.weibo.com/share/share.php?url=https://nkakun.cn/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/&title=网络通信中几种IO模型的解释与比较 - Marthon&summary=要点
-从通信底层看socket
-I/O模型
-阻塞式I/O
-非阻塞式I/O
-I/O复用
-信号驱动I/O
-异步I/O
-
-
-"
+          href="http://service.weibo.com/share/share.php?url=https://nkakun.cn/2020/11/13/Systemd%E6%96%87%E4%BB%B6%E7%BC%96%E5%86%99/&title=Systemd文件编写 - Marthon&summary="
           
           >
           
@@ -616,32 +578,13 @@ I/O复用
         
           <div class="prev-next">
             
-              <section class="prev">
-                <span class="art-item-left">
-                  <h4>
-                    <a href="/2020/11/13/Systemd%E6%96%87%E4%BB%B6%E7%BC%96%E5%86%99/" rel="prev" title="Systemd文件编写">
-                      <i class="fas fa-chevron-left" aria-hidden="true"></i>
-                      
-                        Systemd文件编写
-                      
-                    </a>
-                  </h4>
-                  
-                    
-                    <h6 class="tags">
-                      &nbsp;<a class="tag" href="/tags/Linux/"><i class="fas fa-tag" aria-hidden="true"></i> Linux</a> <a class="tag" href="/tags/service/"><i class="fas fa-tag" aria-hidden="true"></i> service</a>
-                    </h6>
-                  
-                </span>
-              </section>
-            
             
               <section class="next">
                 <span class="art-item-right" aria-hidden="true">
                   <h4>
-                    <a href="/2020/03/05/MySQL%E4%B8%8EB+%E6%A0%91/" rel="prev" title="MySQL与B+树">
+                    <a href="/2020/03/12/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E4%B8%AD%E5%87%A0%E7%A7%8DIO%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%A7%A3%E9%87%8A%E4%B8%8E%E6%AF%94%E8%BE%83/" rel="prev" title="网络通信中几种IO模型的解释与比较">
                       
-                        MySQL与B+树
+                        网络通信中几种IO模型的解释与比较
                       
                       <i class="fas fa-chevron-right" aria-hidden="true"></i>
                     </a>
@@ -649,7 +592,7 @@ I/O复用
                   
                     
                     <h6 class="tags">
-                      <a class="tag" href="/tags/MySQL/"><i class="fas fa-tag" aria-hidden="true"></i> MySQL</a> <a class="tag" href="/tags/B-%E6%A0%91/"><i class="fas fa-tag" aria-hidden="true"></i> B+树</a>&nbsp;
+                      <a class="tag" href="/tags/Linux/"><i class="fas fa-tag" aria-hidden="true"></i> Linux</a> <a class="tag" href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/"><i class="fas fa-tag" aria-hidden="true"></i> 网络通信</a>&nbsp;
                     </h6>
                   
                 </span>
@@ -694,7 +637,7 @@ I/O复用
 
   <script>
     window.subData = {
-      title: '网络通信中几种IO模型的解释与比较',
+      title: 'Systemd文件编写',
       tools: true
     }
   </script>
@@ -718,29 +661,7 @@ I/O复用
 
 
     <div class='content'>
-      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#要点"><span class="toc-text">要点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#从网络通信底层看socket"><span class="toc-text">从网络通信底层看socket</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#I-O模型"><span class="toc-text">I&#x2F;O模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#阻塞式I-O"><span class="toc-text">阻塞式I&#x2F;O</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#非阻塞式I-O"><span class="toc-text">非阻塞式I&#x2F;O</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#I-O复用"><span class="toc-text">I&#x2F;O复用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#信号驱动I-O"><span class="toc-text">信号驱动I&#x2F;O</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#异步I-O"><span class="toc-text">异步I&#x2F;O</span></a></li></ol>
-    </div>
-  </section>
-
-
-  
-
-  
-    
-    
-  
-
-  <section class="widget related_posts  widget-blur desktop mobile">
-    
-  <header>
-    
-      <i class="fas fa-bookmark fa-fw" aria-hidden="true"></i><span class='name'>相关文章</span>
-    
-  </header>
-
-
-    <div class="content">
-      <ul class="popular-posts"><li class="popular-posts-item"><div class="popular-posts-title"><h3><a href="/2020/11/13/Systemd文件编写/" title="Systemd文件编写" rel="bookmark">Systemd文件编写</a></h3></div></li></ul>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#样例"><span class="toc-text">样例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#编写常用规则"><span class="toc-text">编写常用规则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Service"><span class="toc-text">[Service]</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Install"><span class="toc-text">[Install]</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#其他命令"><span class="toc-text">其他命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#开机自动启动"><span class="toc-text">开机自动启动</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#重新加载配置文件"><span class="toc-text">重新加载配置文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#启动服务"><span class="toc-text">启动服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#停止服务"><span class="toc-text">停止服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#重启服务"><span class="toc-text">重启服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#查看服务状态"><span class="toc-text">查看服务状态</span></a></li></ol></li></ol>
     </div>
   </section>
 
