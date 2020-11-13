@@ -414,57 +414,25 @@
 
   <section class="article typo">
     <div class="article-entry" itemprop="articleBody">
-      <p>###配置文件路径</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/lib/systemd/system</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="样例"><a href="#样例" class="headerlink" title="样例"></a>样例</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description&#x3D;NeighborBBS server daemon</span><br><span class="line"># After&#x3D;mysql.service</span><br><span class="line">Wants&#x3D;network.target mysql.service</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart&#x3D;&#x2F;root&#x2F;work&#x2F;repos&#x2F;neighbor_bbs&#x2F;run.sh</span><br><span class="line">Restart&#x3D;always</span><br><span class="line">RestartSec&#x3D;5s</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy&#x3D;multi-user.target</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="编写常用规则"><a href="#编写常用规则" class="headerlink" title="编写常用规则"></a>编写常用规则</h3><hr>
-<p>####[Unit]</p>
-<p><code>Description</code>字段给出当前服务的简单描述</p>
-<p><code>Documentation</code>字段给出文档位置。</p>
-<p><code>After</code>字段表示此服务应该在哪些服务后启动(必须)</p>
-<p><code>Wants</code>字段表示此服务应该在哪些服务后启动(非必须)</p>
-<h4 id="Service"><a href="#Service" class="headerlink" title="[Service]"></a>[Service]</h4><p><code>ExecStart</code>表示启动命令，如果跟的是<code>.sh</code>文件，<code>.sh</code>文件的开头应为 /bin/bash</p>
-<p><code>ExecStop</code>字段：停止服务时执行的命令</p>
-<p><code>ExecStartPre</code>字段：启动服务之前执行的命令</p>
-<p><code>ExecStartPost</code>字段：启动服务之后执行的命令</p>
-<p><code>ExecStopPost</code>字段：停止服务之后执行的命令</p>
-<p><code>Type</code>表示启动类型</p>
-<ul>
-<li>simple（默认值）：<code>ExecStart</code>字段启动的进程为主进程</li>
-<li>oneshot：类似于<code>simple</code>，但只执行一次，Systemd 会等它执行完，才启动其他服务</li>
+      <h4 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h4><ul>
+<li>配置文件位置</li>
+<li>编写样例</li>
+<li>如何编写一个符合程序运行的service文件<ul>
+<li>模块划分</li>
+<li>具体编写规则</li>
 </ul>
-<p><code>Restart</code>字段表示sshd 退出后，Systemd 的重启方式</p>
-<ul>
-<li>no（默认值）：退出后不会重启</li>
-<li>on-failure：非正常退出时（退出状态码非0），包括被信号终止和超时，才会重启</li>
-<li>on-success：只有正常退出时（退出状态码为0），才会重启</li>
-<li>always：不管是什么退出原因，总是重启</li>
+</li>
+<li>常用命令</li>
 </ul>
-<p><code>RestartSec</code>字段表示 Systemd 重启服务之前，需要等待的秒数</p>
-<h4 id="Install"><a href="#Install" class="headerlink" title="[Install]"></a>[Install]</h4><p><code>WantedBy</code>字段：表示该服务所在的 Target,一般常用multi-user.target</p>
-<blockquote>
-<p><code>Target</code>的含义是服务组，表示一组服务。<code>WantedBy=multi-user.target</code>指的是，sshd 所在的 Target 是<code>multi-user.target</code>。</p>
-<p>这个设置非常重要，因为执行<code>systemctl enable sshd.service</code>命令时，<code>sshd.service</code>的一个符号链接，就会放在<code>/etc/systemd/system</code>目录下面的<code>multi-user.target.wants</code>子目录之中。在multi-user.target这个组里的所有服务，都将开机启动。这就是为什么<code>systemctl enable</code>命令能设置开机启动的原因。</p>
-</blockquote>
-<h3 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h3><h4 id="开机自动启动"><a href="#开机自动启动" class="headerlink" title="开机自动启动"></a>开机自动启动</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable service_name</span><br></pre></td></tr></table></figure>
-
-<h4 id="重新加载配置文件"><a href="#重新加载配置文件" class="headerlink" title="重新加载配置文件"></a>重新加载配置文件</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload</span><br></pre></td></tr></table></figure>
-
-<h4 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start service_name</span><br></pre></td></tr></table></figure>
-
-<h4 id="停止服务"><a href="#停止服务" class="headerlink" title="停止服务"></a>停止服务</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop service_name</span><br></pre></td></tr></table></figure>
-
-<h4 id="重启服务"><a href="#重启服务" class="headerlink" title="重启服务"></a>重启服务</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart service_name</span><br></pre></td></tr></table></figure>
-
-<h4 id="查看服务状态"><a href="#查看服务状态" class="headerlink" title="查看服务状态"></a>查看服务状态</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status service_name</span><br></pre></td></tr></table></figure>
-
-
+      
+        
+          <div class="button readmore">
+            <a href="/2020/11/13/Systemd%E6%96%87%E4%BB%B6%E7%BC%96%E5%86%99/" class="flat-box">
+              <i class="fas fa-book-open fa-fw" aria-hidden="true"></i>
+              Read More
+            </a>
+          </div>
+        
       
     </div>
     <!-- 
